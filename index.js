@@ -42,10 +42,20 @@ async function run() {
             res.send(service)
         })
 
+        app.get('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { serviceId: id }
+            const options = { sort: { created_at: -1 } }
+            const cursor = reviewCollection.find(query, options)
+            const reviews = await cursor.toArray();
+            res.send(reviews)
+        })
+
+
+
         app.post('/reviews', async (req, res) => {
             const review = req.body;
             req.body.created_at = new Date();
-            console.log(review)
             const result = await reviewCollection.insertOne(review)
             res.send(result)
         })
