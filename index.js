@@ -51,7 +51,15 @@ async function run() {
             res.send(reviews)
         })
 
-
+        app.get('/reviews', async (req, res) => {
+            const { email } = req.query;
+            console.log(email)
+            const query = { userEmail: email }
+            const options = { sort: { created_at: -1 } }
+            const cursor = reviewCollection.find(query, options)
+            const reviews = await cursor.toArray()
+            res.send(reviews)
+        })
 
         app.post('/reviews', async (req, res) => {
             const review = req.body;
