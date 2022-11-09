@@ -52,6 +52,12 @@ async function run() {
             res.send(reviews)
         })
 
+        app.post('/services', async (req, res) => {
+            const service = req.body;
+            const result = await serviceCollection.insertOne(service)
+            res.send(result)
+        })
+
         app.get('/reviews', async (req, res) => {
             const { email } = req.query;
             console.log(email)
@@ -66,6 +72,20 @@ async function run() {
             const review = req.body;
             req.body.created_at = new Date();
             const result = await reviewCollection.insertOne(review)
+            res.send(result)
+        })
+
+        app.patch('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const { text } = req.body;
+            console.log(req.body)
+            const update_doc = {
+                $set: {
+                    reviewText: text
+                }
+            }
+            const query = { _id: ObjectId(id) }
+            const result = await reviewCollection.updateOne(query, update_doc)
             res.send(result)
         })
 
