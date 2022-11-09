@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { query } = require('express');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000
@@ -19,6 +19,13 @@ async function run() {
     try {
         const serviceCollection = client.db('storyteller').collection('services');
         const reviewCollection = client.db('storyteller').collection('reviews');
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ token })
+        })
+
 
         app.get('/services', async (req, res) => {
             const query = {};
@@ -43,6 +50,12 @@ async function run() {
             res.send(service)
         })
 
+        app.post('/services', async (req, res) => {
+            const service = req.body;
+            const result = await serviceCollection.insertOne(service)
+            res.send(result)
+        })
+
         app.get('/reviews/:id', async (req, res) => {
             const id = req.params.id;
             const query = { serviceId: id }
@@ -52,15 +65,10 @@ async function run() {
             res.send(reviews)
         })
 
-        app.post('/services', async (req, res) => {
-            const service = req.body;
-            const result = await serviceCollection.insertOne(service)
-            res.send(result)
-        })
 
         app.get('/reviews', async (req, res) => {
+            console.log(req.headers.authorization)
             const { email } = req.query;
-            console.log(email)
             const query = { userEmail: email }
             const options = { sort: { created_at: -1 } }
             const cursor = reviewCollection.find(query, options)
